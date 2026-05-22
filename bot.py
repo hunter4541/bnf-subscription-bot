@@ -71,6 +71,41 @@ def start_handler(message):
             "admin_id": ADMIN_ID
         })
 
+# ---------------- ADMIN PANEL ---------------- #
+
+if user_id == ADMIN_ID:
+
+    markup = InlineKeyboardMarkup(row_width=1)
+
+    markup.add(
+        InlineKeyboardButton(
+            "📊 Revenue Dashboard",
+            callback_data="revenue_dashboard"
+        )
+    )
+
+    markup.add(
+        InlineKeyboardButton(
+            "💳 Subscription",
+            callback_data="subscription_panel"
+        )
+    )
+
+    markup.add(
+        InlineKeyboardButton(
+            "📢 Channels",
+            callback_data="show_channels"
+        )
+    )
+
+    bot.send_message(
+        message.chat.id,
+        "✅ *BNF ADMIN PANEL*",
+        parse_mode="Markdown",
+        reply_markup=markup
+    )
+
+    return
     if ch_data:
 
         markup = InlineKeyboardMarkup()
@@ -260,6 +295,145 @@ def send_monthly_report():
         f"📅 {month_name} {now.year}\n\n"
         f"👥 TOTAL BUYERS: {total_buyers}\n"
         f"💰 TOTAL COLLECTION: ₹{total_collection}"
+    )
+
+# ---------------- REVENUE DASHBOARD ---------------- #
+
+@bot.callback_query_handler(func=lambda call: call.data == "revenue_dashboard")
+def revenue_dashboard(call):
+
+    if call.from_user.id != ADMIN_ID:
+        return
+
+    now = datetime.now()
+
+    text = "📊 *REVENUE DASHBOARD*\n\n"
+
+    for i in range(3, 0, -1):
+
+        month = now.month - i
+
+        year = now.year
+
+        if month <= 0:
+            month += 12
+            year -= 1
+
+        start_date = datetime(year, month, 1)
+
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1)
+
+        else:
+            end_date = datetime(year, month + 1, 1)
+
+        users = list(users_col.find({
+            "buy_date": {
+                "$gte": start_date.timestamp(),
+                "$lt": end_date.timestamp()
+            }
+        }))
+
+        buyers = len(users)
+
+        collection = sum(
+            int(user.get("price", 0))
+            for user in users
+        )
+
+        text += (
+            f"📊 MONTHLY REPORT CLOSED\n"
+            f"📅 {start_date.strftime('%b %Y').upper()}\n"
+            f"👥 TOTAL BUYERS: {buyers}\n"
+            f"💰 TOTAL COLLECTION: ₹{collection}\n"
+            f"__________________________________\n\n"
+        )
+
+    current_month_start = datetime(
+        now.year,
+        now.month,
+        1
+    )
+
+    if now.month == 12:
+
+        next_month = datetime(now.year + 1, 1, 1)
+
+    else:
+
+        next_month = datetime(now.year, now.month + 1, 1)
+
+    remaining = next_month - now
+
+    days = remaining.days
+
+    hours = remaining.seconds // 3600
+
+    minutes = (remaining.seconds % 3600) // 60
+
+    current_users = list(users_col.find({
+        "buy_date": {
+            "$gte": current_month_start.timestamp()
+        }
+    }))
+
+    current_buyers = len(current_users)
+
+    current_collection = sum(
+        int(user.get("price", 0))
+        for user in current_users
+    )
+
+    text += (
+        f"🔴 LIVE\n"
+        f"📅 CURRENT MONTH: {now.strftime('%b %Y').upper()}\n\n"
+        f"⏳ MONTH END COUNTDOWN:\n"
+        f"{days} Days {hours} Hours {minutes} Minutes\n\n"
+        f"👥 CURRENT BUYERS: {current_buyers}\n"
+        f"💰 CURRENT COLLECTION: ₹{current_collection}"
+    )
+
+    bot.edit_message_text(
+        text,
+        call.message.chat.id,
+        call.message.message_id,
+        parse_mode="Markdown"
+    )
+
+@bot.callback_query_handler(func=lambda call: call.data == "show_channels")
+def show_channels(call):
+
+    if call.from_user.id != ADMIN_ID:
+        return
+
+    markup = InlineKeyboardMarkup()
+
+    cursor = channels_col.find({
+        "admin_id": ADMIN_ID
+    })
+
+    for ch in cursor:
+
+        markup.add(
+            InlineKeyboardButton(
+                f"📢 {ch['name']}",
+                callback_data=f"manage_{ch['channel_id']}"
+            )
+        )
+
+    markup.add(
+        InlineKeyboardButton(
+            "➕ Add New Channel",
+            callback_data="add_new"
+        )
+    )
+
+    bot.edit_message_text(
+        "📢 *CHANNEL MANAGEMENT*",
+        call.message.chat.id,
+        call.message.message_id,
+        parse_mode="Markdown",
+        reply_markup=markup
     )
 
 # ---------------- CHANNEL LIST ---------------- #
@@ -635,6 +809,48 @@ def reject_payment(call):
         f"❌ Rejected User {u_id}",
         call.message.chat.id,
         call.message.message_id
+    )
+
+
+# ---------------- SUBSCRIPTION PANEL ---------------- #
+
+@bot.callback_query_handler(func=lambda call: call.data == "subscription_panel")
+def subscription_panel(call):
+
+    if call.from_user.id != ADMIN_ID:
+        return
+
+    channels = list(channels_col.find({
+        "admin_id": ADMIN_ID
+    }))
+
+    text = "💳 *SUBSCRIPTION PLANS*\n\n"
+
+    for ch in channels:
+
+        text += f"📢 {ch['name']}\n"
+
+        for t, p in ch['plans'].items():
+
+            if int(t) >= 1440:
+
+                label = f"{int(t)//1440} Days"
+
+            else:
+
+                label = f"{t} Minutes"
+
+            text += f"• {label} → ₹{p}\n"
+
+        text += "\n"
+
+    text += "⚡ Edit system coming next."
+
+    bot.edit_message_text(
+        text,
+        call.message.chat.id,
+        call.message.message_id,
+        parse_mode="Markdown"
     )
 
 # ---------------- MANAGE CHANNEL ---------------- #
