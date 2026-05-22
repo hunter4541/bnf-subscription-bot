@@ -645,7 +645,15 @@ def delete_service_messages(message):
 
     except Exception as e:
         print(e)
+@bot.message_handler(content_types=['photo'])
+def get_file_id(message):
 
+    file_id = message.photo[-1].file_id
+
+    bot.reply_to(
+        message,
+        file_id
+    )
 # ---------------- START BOT ---------------- #
 
 if __name__ == '__main__':
