@@ -94,29 +94,30 @@ def start_handler(message):
                 url=f"https://t.me/{CONTACT_USERNAME}"
             )
         )
-        
-photo_url = 
-"AgACAgUAAxkBAAPyahBLa4soS8L_x4xErVC6xRoLdFcAArMQaxteyIFUqkNYNrlnSPgBAAMCAAN5AAM7BA"
 
-bot.send_photo(
-    message.chat.id,
-    photo=photo_url,
-    caption=
-    f"🔥 *Welcome To BNF PRIVATE COMMUNITY*\n\n"
-    f"📢 *{ch_data['name']}*\n\n"
-    f"✅ Daily Market Analysis\n"
-    f"✅ Live Trading Sessions\n"
-    f"✅ MRC Strategy Setup\n"
-    f"✅ Premium Trade Alerts\n"
-    f"✅ Risk Management\n"
-    f"✅ Private Community Access\n"
-    f"✅ Q&A Support\n\n"
-    f"Select your subscription plan below:",
-    reply_markup=markup,
-    parse_mode="Markdown"
-)
-      
-return
+        # ---------------- WELCOME BANNER ---------------- #
+
+        photo_url = "AgACAgUAAxkBAAPyahBLa4soS8L_x4xErVC6xRoLdFcAArMQaxteyIFUqkNYNrlnSPgBAAMCAAN5AAM7BA"
+
+        bot.send_photo(
+            message.chat.id,
+            photo=photo_url,
+            caption=
+            f"🔥 *Welcome To BNF PRIVATE COMMUNITY*\n\n"
+            f"📢 *{ch_data['name']}*\n\n"
+            f"✅ Daily Market Analysis\n"
+            f"✅ Live Trading Sessions\n"
+            f"✅ MRC Strategy Setup\n"
+            f"✅ Premium Trade Alerts\n"
+            f"✅ Risk Management\n"
+            f"✅ Private Community Access\n"
+            f"✅ Q&A Support\n\n"
+            f"Select your subscription plan below:",
+            reply_markup=markup,
+            parse_mode="Markdown"
+        )
+
+        return
 
     if user_id == ADMIN_ID:
 
@@ -650,15 +651,7 @@ def delete_service_messages(message):
 
     except Exception as e:
         print(e)
-@bot.message_handler(content_types=['photo'])
-def get_file_id(message):
 
-    file_id = message.photo[-1].file_id
-
-    bot.reply_to(
-        message,
-        file_id
-    )
 # ---------------- START BOT ---------------- #
 
 if __name__ == '__main__':
