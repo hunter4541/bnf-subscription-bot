@@ -51,6 +51,7 @@ def start_handler(message):
     # -------- USER JOIN FLOW -------- #
 
     if len(text) > 1:
+
         try:
 
             ch_id = int(text[1])
@@ -86,13 +87,15 @@ def start_handler(message):
 
                 bot.send_message(
                     message.chat.id,
-                    f"🔥 *Welcome To BNF PRIVATE COMMUNITY*\n\n"
+                    f"🔥 *BNF PREMIUM MEMBERSHIP*\n\n"
                     f"📢 You are joining:\n*{ch_data['name']}*\n\n"
                     f"✅ Daily Market Analysis\n"
-                    f"✅ Live Chart Reading\n"
+                    f"✅ Live Trading Sessions\n"
+                    f"✅ MRC Strategy Setup\n"
+                    f"✅ Premium Trade Alerts\n"
                     f"✅ Risk Management\n"
-                    f"✅ Trading Psychology\n"
-                    f"✅ Community Discussion\n\n"
+                    f"✅ Private Community Access\n"
+                    f"✅ Q&A Support\n\n"
                     f"Select your subscription plan below:",
                     reply_markup=markup,
                     parse_mode="Markdown"
@@ -111,7 +114,8 @@ def start_handler(message):
             message.chat.id,
             "✅ *BNF Admin Panel Active*\n\n"
             "/add - Add Channel\n"
-            "/channels - Manage Channels",
+            "/channels - Manage Channels\n"
+            "/setplan - Change Subscription Plans",
             parse_mode="Markdown"
         )
 
@@ -276,6 +280,60 @@ def finalize_channel(message, ch_id, ch_name):
             "❌ Invalid format."
         )
 
+# ---------------- CHANGE PLANS ---------------- #
+
+@bot.message_handler(commands=['setplan'], func=lambda m: m.from_user.id == ADMIN_ID)
+def set_plan(message):
+
+    try:
+
+        text = message.text.split()
+
+        ch_id = int(text[1])
+        mins = text[2]
+        price = text[3]
+
+        ch_data = channels_col.find_one({
+            "channel_id": ch_id
+        })
+
+        if not ch_data:
+
+            bot.reply_to(
+                message,
+                "❌ Channel not found."
+            )
+            return
+
+        plans = ch_data.get("plans", {})
+
+        plans[mins] = price
+
+        channels_col.update_one(
+            {
+                "channel_id": ch_id
+            },
+            {
+                "$set": {
+                    "plans": plans
+                }
+            }
+        )
+
+        bot.reply_to(
+            message,
+            f"✅ Plan Updated Successfully!\n\n"
+            f"⏳ {mins} Minutes\n"
+            f"💰 ₹{price}"
+        )
+
+    except:
+
+        bot.reply_to(
+            message,
+            "❌ Usage:\n/setplan channelid minutes price"
+        )
+
 # ---------------- PAYMENT FLOW ---------------- #
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('select_'))
@@ -344,13 +402,6 @@ def admin_notify(call):
         )
     )
 
-    markup.add(
-        InlineKeyboardButton(
-            "❌ Reject",
-            callback_data=f"rej_{user.id}"
-        )
-    )
-
     bot.send_message(
         ADMIN_ID,
         f"🔔 *Payment Verification Required!*\n\n"
@@ -385,14 +436,12 @@ def approve_now(call):
 
         expiry_ts = int(expiry_datetime.timestamp())
 
-        # Main Channel Link
         channel_link = bot.create_chat_invite_link(
             ch_id,
             member_limit=1,
             expire_date=expiry_ts
         )
 
-        # Group Link
         group_link = bot.create_chat_invite_link(
             GROUP_ID,
             member_limit=1,
@@ -478,7 +527,6 @@ def kick_expired_users():
 
         try:
 
-            # Remove from Channel
             bot.ban_chat_member(
                 user['channel_id'],
                 user['user_id']
@@ -489,7 +537,6 @@ def kick_expired_users():
                 user['user_id']
             )
 
-            # Remove from Group
             bot.ban_chat_member(
                 GROUP_ID,
                 user['user_id']
@@ -544,7 +591,16 @@ if __name__ == '__main__':
 
     print("BNF BOT RUNNING...")
 
-    bot.infinity_polling(
-        timeout=20,
-        long_polling_timeout=10
-)
+    while True:
+
+        try:
+
+            bot.infinity_polling(
+                timeout=10,
+                long_polling_timeout=5,
+                skip_pending=True
+            )
+
+        except Exception as e:
+
+            print(f"Polling Error: {e}")
