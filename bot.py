@@ -71,43 +71,43 @@ def start_handler(message):
             "admin_id": ADMIN_ID
         })
 
-# ---------------- ADMIN PANEL ---------------- #
+    # ---------------- ADMIN PANEL ---------------- #
 
-if user_id == ADMIN_ID:
+    if user_id == ADMIN_ID:
 
-    markup = InlineKeyboardMarkup(row_width=1)
+        markup = InlineKeyboardMarkup(row_width=1)
 
-    markup.add(
-        InlineKeyboardButton(
-            "📊 Revenue Dashboard",
-            callback_data="revenue_dashboard"
+        markup.add(
+            InlineKeyboardButton(
+                "📊 Revenue Dashboard",
+                callback_data="revenue_dashboard"
+            )
         )
-    )
 
-    markup.add(
-        InlineKeyboardButton(
-            "💳 Subscription",
-            callback_data="subscription_panel"
+        markup.add(
+            InlineKeyboardButton(
+                "💳 Subscription",
+                callback_data="subscription_panel"
+            )
         )
-    )
 
-    markup.add(
-        InlineKeyboardButton(
-            "📢 Channels",
-            callback_data="show_channels"
+        markup.add(
+            InlineKeyboardButton(
+                "📢 Channels",
+                callback_data="show_channels"
+            )
         )
-    )
 
-    bot.send_message(
-        message.chat.id,
-        "✅ *BNF ADMIN PANEL*",
-        parse_mode="Markdown",
-        reply_markup=markup
-    )
+        bot.send_message(
+            message.chat.id,
+            "✅ *BNF ADMIN PANEL*",
+            parse_mode="Markdown",
+            reply_markup=markup
+        )
 
-    return
-    
-    if ch_data:
+        return
+        
+        if ch_data:
 
         markup = InlineKeyboardMarkup()
 
