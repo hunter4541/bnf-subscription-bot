@@ -1,4 +1,5 @@
 import os
+import time
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pymongo import MongoClient
@@ -126,7 +127,8 @@ def start_handler(message):
             "✅ *BNF Admin Panel Active*\n\n"
             "/add - Add Channel\n"
             "/channels - Manage Channels\n"
-            "/myplan - Check Subscription",
+            "/myplan - Check Subscription\n"
+            "/report - Monthly Report",
             parse_mode="Markdown"
         )
 
@@ -184,6 +186,80 @@ def my_plan(message):
         f"{expiry.strftime('%d %B %Y - %I:%M %p')}\n\n"
         f"⏳ Remaining Time:\n"
         f"{days} Days {hours} Hours {minutes} Minutes"
+    )
+
+# ---------------- MONTHLY REPORT ---------------- #
+
+@bot.message_handler(commands=['report'])
+def monthly_report(message):
+
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    now = datetime.now()
+
+    month_start = datetime(
+        now.year,
+        now.month,
+        1
+    ).timestamp()
+
+    users = list(users_col.find({
+        "buy_date": {
+            "$gte": month_start
+        }
+    }))
+
+    total_buyers = len(users)
+
+    total_collection = sum(
+        user.get("price", 0)
+        for user in users
+    )
+
+    month_name = now.strftime("%B").upper()
+
+    bot.send_message(
+        ADMIN_ID,
+        f"📊 BNF MONTHLY REPORT\n\n"
+        f"📅 This Month ({month_name})\n\n"
+        f"👥 BUYERS: {total_buyers}\n"
+        f"💰 COLLECTION: ₹{total_collection}"
+    )
+
+# ---------------- AUTO MONTHLY REPORT ---------------- #
+
+def send_monthly_report():
+
+    now = datetime.now()
+
+    month_start = datetime(
+        now.year,
+        now.month,
+        1
+    ).timestamp()
+
+    users = list(users_col.find({
+        "buy_date": {
+            "$gte": month_start
+        }
+    }))
+
+    total_buyers = len(users)
+
+    total_collection = sum(
+        user.get("price", 0)
+        for user in users
+    )
+
+    month_name = now.strftime("%B").upper()
+
+    bot.send_message(
+        ADMIN_ID,
+        f"📊 MONTHLY REPORT CLOSED\n\n"
+        f"📅 {month_name} {now.year}\n\n"
+        f"👥 TOTAL BUYERS: {total_buyers}\n"
+        f"💰 TOTAL COLLECTION: ₹{total_collection}"
     )
 
 # ---------------- CHANNEL LIST ---------------- #
@@ -350,7 +426,7 @@ def user_pays(call):
 
     price = ch_data['plans'][mins]
 
-    qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa={UPI_ID}%26am={price}%26cu=INR"
+    qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa={UPI_ID}%26pn=BNFTRADE%26tn=Subscription%26am={price}%26cu=INR"
 
     markup = InlineKeyboardMarkup()
 
@@ -448,6 +524,9 @@ def admin_notify(message, ch_id, mins):
 @bot.callback_query_handler(func=lambda call: call.data.startswith('app_'))
 def approve_now(call):
 
+    if call.from_user.id != ADMIN_ID:
+        return
+
     _, u_id, ch_id, mins = call.data.split('_')
 
     u_id = int(u_id)
@@ -472,6 +551,12 @@ def approve_now(call):
             expire_date=expiry_ts
         )
 
+        plan_price = int(
+            channels_col.find_one({
+                "channel_id": ch_id
+            })['plans'][str(mins)]
+        )
+
         users_col.update_one(
             {
                 "user_id": u_id,
@@ -479,7 +564,9 @@ def approve_now(call):
             },
             {
                 "$set": {
-                    "expiry": expiry_datetime.timestamp()
+                    "expiry": expiry_datetime.timestamp(),
+                    "price": plan_price,
+                    "buy_date": datetime.now().timestamp()
                 }
             },
             upsert=True
@@ -516,6 +603,9 @@ def approve_now(call):
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('rej_'))
 def reject_payment(call):
+
+    if call.from_user.id != ADMIN_ID:
+        return
 
     _, u_id, ch_id = call.data.split('_')
 
@@ -666,6 +756,14 @@ if __name__ == '__main__':
         minutes=1
     )
 
+    scheduler.add_job(
+        send_monthly_report,
+        'cron',
+        day='last',
+        hour=23,
+        minute=59
+    )
+
     scheduler.start()
 
     bot.remove_webhook()
@@ -685,3 +783,4 @@ if __name__ == '__main__':
         except Exception as e:
 
             print(f"Polling Error: {e}")
+            time.sleep(5)
