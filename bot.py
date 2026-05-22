@@ -106,8 +106,8 @@ def start_handler(message):
         )
 
         return
-        
-        if ch_data:
+
+    if ch_data:
 
         markup = InlineKeyboardMarkup()
 
@@ -115,6 +115,7 @@ def start_handler(message):
 
             if int(p_time) < 1440:
                 label = f"{p_time} Minutes"
+
             else:
                 label = f"{int(p_time)//1440} Days"
 
@@ -156,24 +157,10 @@ def start_handler(message):
 
         return
 
-    if user_id == ADMIN_ID:
-
-        bot.send_message(
-            message.chat.id,
-            "✅ *BNF Admin Panel Active*\n\n"
-            "/add - Add Channel\n"
-            "/channels - Manage Channels\n"
-            "/myplan - Check Subscription\n"
-            "/report - Monthly Report",
-            parse_mode="Markdown"
-        )
-
-    else:
-
-        bot.send_message(
-            message.chat.id,
-            "❌ No subscription plans available."
-        )
+    bot.send_message(
+        message.chat.id,
+        "❌ No subscription plans available."
+    )
 
 # ---------------- MY PLAN ---------------- #
 
