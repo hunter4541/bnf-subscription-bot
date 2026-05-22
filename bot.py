@@ -48,8 +48,6 @@ def start_handler(message):
     user_id = message.from_user.id
     text = message.text.split()
 
-    # -------- USER JOIN FLOW -------- #
-
     if len(text) > 1:
 
         try:
@@ -114,8 +112,6 @@ def start_handler(message):
         )
 
         return
-
-    # -------- ADMIN PANEL -------- #
 
     if user_id == ADMIN_ID:
 
@@ -483,6 +479,8 @@ def approve_now(call):
             upsert=True
         )
 
+        expiry_text = expiry_datetime.strftime("%d %B %Y - %I:%M %p")
+
         bot.send_message(
             u_id,
             f"🥳 Payment Approved!\n\n"
@@ -490,7 +488,9 @@ def approve_now(call):
             f"{channel_link.invite_link}\n\n"
             f"💬 Chats Group:\n"
             f"{group_link.invite_link}\n\n"
-            f"⚠️ Access expires automatically after your subscription ends."
+            f"📅 Expiry Date:\n"
+            f"{expiry_text}\n\n"
+            f"⏳ Subscription activated successfully."
         )
 
         bot.edit_message_text(
@@ -625,6 +625,26 @@ def kick_expired_users():
 
         except Exception as e:
             print(e)
+
+# ---------------- AUTO DELETE JOIN/LEFT MSG ---------------- #
+
+@bot.message_handler(
+    content_types=[
+        'new_chat_members',
+        'left_chat_member'
+    ]
+)
+def delete_service_messages(message):
+
+    try:
+
+        bot.delete_message(
+            message.chat.id,
+            message.message_id
+        )
+
+    except Exception as e:
+        print(e)
 
 # ---------------- START BOT ---------------- #
 
