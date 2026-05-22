@@ -26,7 +26,7 @@ def keep_alive():
 # ---------------- CONFIG ---------------- #
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-MONGO_URI = os.getenv('MONGO_URI')
+MONGO_URI = os.getenv('MBOT_TOKEN = os.getenv('BOT_TOKEN')ONGO_URI')
 ADMIN_ID = int(os.getenv('ADMIN_ID'))
 UPI_ID = os.getenv('UPI_ID')
 CONTACT_USERNAME = os.getenv('CONTACT_USERNAME')
@@ -48,6 +48,44 @@ def start_handler(message):
 
     user_id = message.from_user.id
     text = message.text.split()
+
+    # ================= ADMIN PANEL ================= #
+
+    if user_id == ADMIN_ID:
+
+        markup = InlineKeyboardMarkup(row_width=1)
+
+        markup.add(
+            InlineKeyboardButton(
+                "💰 Revenue Dashboard",
+                callback_data="revenue_dashboard"
+            )
+        )
+
+        markup.add(
+            InlineKeyboardButton(
+                "📦 Subscription",
+                callback_data="subscription_panel"
+            )
+        )
+
+        markup.add(
+            InlineKeyboardButton(
+                "📢 Channels",
+                callback_data="channel_panel"
+            )
+        )
+
+        bot.send_message(
+            message.chat.id,
+            "📊 *BNF ADMIN PANEL*",
+            reply_markup=markup,
+            parse_mode="Markdown"
+        )
+
+        return
+
+    # ================= USER START ================= #
 
     if len(text) > 1:
 
