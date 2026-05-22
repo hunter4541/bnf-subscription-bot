@@ -95,7 +95,8 @@ def start_handler(message):
             )
         )
         
-photo_url = "AgACAgUAAxkBAAPyahBLa4soS8L_x4xErVC6xRoLdFcAArMQaxteyIFUqkNYNrlnSPgBAAMCAAN5AAM7BA"
+photo_url = 
+"AgACAgUAAxkBAAPyahBLa4soS8L_x4xErVC6xRoLdFcAArMQaxteyIFUqkNYNrlnSPgBAAMCAAN5AAM7BA"
 
 bot.send_photo(
     message.chat.id,
