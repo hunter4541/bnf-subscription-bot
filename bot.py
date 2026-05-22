@@ -94,22 +94,25 @@ def start_handler(message):
                 url=f"https://t.me/{CONTACT_USERNAME}"
             )
         )
+photo_url = "AgACAgUAAxkBAAPyahBLa4soS8L_x4xErVC6xRoLdFcAArMQaxteyIFUqkNYNrlnSPgBAAMCAAN5AAM7BA"
 
-        bot.send_message(
-            message.chat.id,
-            f"🔥 *Welcome To BNF PRIVATE COMMUNITY*\n\n"
-            f"📢 *{ch_data['name']}*\n\n"
-            f"✅ Daily Market Analysis\n"
-            f"✅ Live Trading Sessions\n"
-            f"✅ MRC Strategy Setup\n"
-            f"✅ Premium Trade Alerts\n"
-            f"✅ Risk Management\n"
-            f"✅ Private Community Access\n"
-            f"✅ Q&A Support\n\n"
-            f"Select your subscription plan below:",
-            reply_markup=markup,
-            parse_mode="Markdown"
-        )
+bot.send_photo(
+    message.chat.id,
+    photo=photo_url,
+    caption=
+    f"🔥 *Welcome To BNF PRIVATE COMMUNITY*\n\n"
+    f"📢 *{ch_data['name']}*\n\n"
+    f"✅ Daily Market Analysis\n"
+    f"✅ Live Trading Sessions\n"
+    f"✅ MRC Strategy Setup\n"
+    f"✅ Premium Trade Alerts\n"
+    f"✅ Risk Management\n"
+    f"✅ Private Community Access\n"
+    f"✅ Q&A Support\n\n"
+    f"Select your subscription plan below:",
+    reply_markup=markup,
+    parse_mode="Markdown"
+)
 
         return
 
