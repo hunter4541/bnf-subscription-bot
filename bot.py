@@ -94,6 +94,7 @@ def start_handler(message):
                 url=f"https://t.me/{CONTACT_USERNAME}"
             )
         )
+        
 photo_url = "AgACAgUAAxkBAAPyahBLa4soS8L_x4xErVC6xRoLdFcAArMQaxteyIFUqkNYNrlnSPgBAAMCAAN5AAM7BA"
 
 bot.send_photo(
@@ -113,8 +114,8 @@ bot.send_photo(
     reply_markup=markup,
     parse_mode="Markdown"
 )
-
-        return
+      
+return
 
     if user_id == ADMIN_ID:
 
